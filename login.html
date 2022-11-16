@@ -45,16 +45,17 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width,minimum-scale=1">
-		<title>Login</title>s
+		<title>Login</title>
         <!-- the form awesome library is used to add icons to our form -->
 		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css">
         <!-- include the stylesheet file -->
-        <link href="style.css" rel="stylesheet" type="text/css">
+        <link href="public/style.css" rel="stylesheet" type="text/css">
+        <script src="https://code.jquery.com/jquery-3.6.1.js" integrity="sha256-3zlB5s2uwoUzrXK3BT7AX3FyvojsraNFxCc2vC/7pNI=" crossorigin="anonymous"></script>
 	</head>
 	<body>
 		<div class="login">
 			<h1>Login</h1>
-			<form action="/auth" method="post">
+			<form>
 				<label for="username">
 					<!-- font awesome icon -->
 					<i class="fas fa-user"></i>
@@ -64,8 +65,27 @@
 					<i class="fas fa-lock"></i>
 				</label>
 				<input type="password" name="password" placeholder="Password" id="password" required>
-				<input type="submit" value="Login">
+				<input type="submit"  onclick="login()" value="Login">
 			</form>
 		</div>
+        <script>
+            function login () {
+                $.ajax({
+                    type: "POST",
+                    url: 'http://localhost:3000/login',
+                    data: JSON.stringify({
+                        email: $('#username').val(),
+                        password: $('#password').val()
+                    }),
+                    success:function (data) {
+                        console.log(data)
+                    },
+                    contentType: 'application/json'
+                });
+            
+            }
+            
+        </script>
+
 	</body>
 </html>
