@@ -1,0 +1,50 @@
+<!-- 
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,minimum-scale=1">
+		<title>Login</title>
+
+		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css">
+
+        <link href="public/style.css" rel="stylesheet" type="text/css">
+        <script src="https://code.jquery.com/jquery-3.6.1.js" integrity="sha256-3zlB5s2uwoUzrXK3BT7AX3FyvojsraNFxCc2vC/7pNI=" crossorigin="anonymous"></script>
+	</head>
+	<body>
+		<div class="login">
+			<h1>Login</h1>
+			<form>
+				<label for="username">
+
+					<i class="fas fa-user"></i>
+				</label>
+				<input type="text" name="username" placeholder="Username" id="username" required>
+				<label for="password">
+					<i class="fas fa-lock"></i>
+				</label>
+				<input type="password" name="password" placeholder="Password" id="password" required>
+				<input type="submit"  onclick="login()" value="Login">
+			</form>
+		</div>
+        <script>
+            function login () {
+                $.ajax({
+                    type: "POST",
+                    url: 'http://localhost:3000/authen',
+                    data: JSON.stringify({
+                        email: $('#username').val(),
+                        password: $('#password').val()
+                    }),
+                    success:function (data) {
+                        console.log(data)
+                    },
+                    contentType: 'application/json'
+                });
+                
+            }
+            
+        </script>
+
+	</body>
+</html> -->

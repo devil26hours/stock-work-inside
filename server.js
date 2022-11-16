@@ -16,10 +16,19 @@ const path = require('path');
 const session = require('express-session');
 const secret = 'popstock'
 
+app.use(session({
+	secret: 'secret',
+	resave: true,
+	saveUninitialized: true
+}));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'static')));
+app.use(express.static(path.join(__dirname, 'imgs')));
 
 app.use(cors());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: true }));
+// app.use(bodyParser.json());
+// app.use(bodyParser.urlencoded({extended: true }));
 
 
 const db = mysql.createConnection({
@@ -34,48 +43,436 @@ db.connect(function(err) {
   console.log("Connected!");
 });
 
-app.use('/public',express.static('public'));
-
-
-  // http://localhost:3000/
-  app.get('/', function(request, response) {
+// http://localhost:3000/
+app.get('/', function(request, response) {
 	// Render login template
 	response.sendFile(path.join(__dirname + '/login.html'));
 });
 
-//login
-app.post('/login', jsonParser, function (req, res, next) {
-    console.log('login', req.body.email, req.body.password);
-    db.execute(
-       ' SELECT * FROM users WHERE email=?',
-       [req.body.email],
-       function(err, users, fields) {
-           if(err) {res.json({status : 'eroor', message: err}); return }
-           if(users.length == 0) {res.json({status : 'eroor', message: 'no users found!'}); return }
-           bcrypt.compare(req.body.password, users[0].password, function(err, isLogin) {
-               if (isLogin) {
-                   var token = jwt.sign({ email: users[0].email }, secret, { expiresIn: '12h' });
-                   res.json({status: 'ok',message:'login success!',token})
-                   
-               }else{
-                   res.json({status: 'error',message:'login failed!'})
-               }
-           });
-           }
-       );
+
+// http://localhost:3000/auth
+app.post('/auth', function(request, response) {
+	// Capture the input fields
+	let username = request.body.username;
+	let password = request.body.password;
+	// Ensure the input fields exists and are not empty
+	if (username && password) {
+		// Execute SQL query that'll select the account from the database based on the specified username and password
+		db.query('SELECT * FROM accounts WHERE username = ? AND password = ?', [username, password], function(error, results, fields) {
+			// If there is an issue with the query, output the error
+			if (error) throw error;
+			// If the account exists
+			if (results.length > 0) {
+				// Authenticate the user
+				request.session.loggedin = true;
+				request.session.username = username;
+				// Redirect to home page
+				response.redirect('/home');
+			} else {
+				response.send('Incorrect Username and/or Password!');
+			}			
+			response.end();
+		});
+	} else {
+		response.send('Please enter Username and Password!');
+		response.end();
+	}
+});
+
+//logout
+app.get('/logout', (req, res) =>{
+    //sessiondestroy
+    req.session = null;
+    res.redirect('/');
 })
 
-   //authen
-   app.post('/authen', jsonParser, function (req, res, next) {
-       try{
-           const token = req.headers.authorization.split(' ')[1]
-           var decoded = jwt.verify(token, secret);
-           res.json({status: 'ok', decoded})  
-       } catch(err){
-           res.json({status: 'error', message: err.message})
-       }
-   })
+// http://localhost:3000/home
+app.get('/home', function(request, response) {
+	// If the user is loggedin
+	if (request.session.loggedin) {
+		// Output username
+		return response.sendFile(path.join(__dirname + '/HomePage.html'));
+        
+	} else {
+		// Not logged in
+		return response.sendFile(path.join(__dirname + '/login.html'));
+	}
+	response.end();
+});
 
+// http://localhost:3000/index
+app.get('/index', function(request, response) {
+	// If the user is loggedin
+	if (request.session.loggedin) {
+		// Output username
+		return response.sendFile(path.join(__dirname + '/index.html'));
+	} else {
+		// Not logged in
+
+       return response.sendFile(path.join(__dirname + '/login.html'));
+	}
+	response.end();
+});
+
+// http://localhost:3000/indexshipsabuy
+app.get('/indexshipsabuy', function(request, response) {
+	// If the user is loggedin
+	if (request.session.loggedin) {
+		// Output username
+		return response.sendFile(path.join(__dirname + '/indexshipsabuy.html'));
+	} else {
+		// Not logged in
+		return response.sendFile(path.join(__dirname + '/login.html'));
+	}
+	response.end();
+});
+
+// http://localhost:3000/indexflash
+app.get('/indexflash', function(request, response) {
+	// If the user is loggedin
+	if (request.session.loggedin) {
+		// Output username
+		return response.sendFile(path.join(__dirname + '/indexflash.html'));
+	} else {
+		// Not logged in
+		return response.sendFile(path.join(__dirname + '/login.html'));
+	}
+	response.end();
+});
+
+// http://localhost:3000/indexbitkub
+app.get('/indexbitkub', function(request, response) {
+	// If the user is loggedin
+	if (request.session.loggedin) {
+		// Output username
+		return response.sendFile(path.join(__dirname + '/indexbitkub.html'));
+	} else {
+		// Not logged in
+		return response.sendFile(path.join(__dirname + '/login.html'));
+	}
+	response.end();
+});
+
+// http://localhost:3000/Requisition
+app.get('/Requisition', function(request, response) {
+	// If the user is loggedin
+	if (request.session.loggedin) {
+		// Output username
+		return response.sendFile(path.join(__dirname + '/Requisition.html'));
+	} else {
+		// Not logged in
+		return response.sendFile(path.join(__dirname + '/login.html'));
+	}
+	response.end();
+});
+// http://localhost:3000/rpa
+app.get('/rpa', function(request, response) {
+	// If the user is loggedin
+	if (request.session.loggedin) {
+		// Output username
+		return response.sendFile(path.join(__dirname + '/rpa.html'));
+	} else {
+		// Not logged in
+		return response.sendFile(path.join(__dirname + '/login.html'));
+	}
+	response.end();
+});
+// http://localhost:3000/rpaBitkub
+app.get('/rpaBitkub', function(request, response) {
+	// If the user is loggedin
+	if (request.session.loggedin) {
+		// Output username
+		return response.sendFile(path.join(__dirname + '/rpaBitkub.html'));
+	} else {
+		// Not logged in
+		return response.sendFile(path.join(__dirname + '/login.html'));
+	}
+	response.end();
+});
+// http://localhost:3000/rpaflash
+app.get('/rpaflash', function(request, response) {
+	// If the user is loggedin
+	if (request.session.loggedin) {
+		// Output username
+		return response.sendFile(path.join(__dirname + '/rpaflash.html'));
+	} else {
+		// Not logged in
+		return response.sendFile(path.join(__dirname + '/login.html'));
+	}
+	response.end();
+});
+// http://localhost:3000/rpashipsabuy
+app.get('/rpashipsabuy', function(request, response) {
+	// If the user is loggedin
+	if (request.session.loggedin) {
+		// Output username
+		return response.sendFile(path.join(__dirname + '/rpashipsabuy.html'));
+	} else {
+		// Not logged in
+		return response.sendFile(path.join(__dirname + '/login.html'));
+	}
+	response.end();
+});
+// http://localhost:3000/rpashipsabuy
+app.get('/rpashipsabuy', function(request, response) {
+	// If the user is loggedin
+	if (request.session.loggedin) {
+		// Output username
+		return response.sendFile(path.join(__dirname + '/rpashipsabuy.html'));
+	} else {
+		// Not logged in
+		return response.sendFile(path.join(__dirname + '/login.html'));
+	}
+	response.end();
+});
+// http://localhost:3000/Requisition
+app.get('/Requisition', function(request, response) {
+	// If the user is loggedin
+	if (request.session.loggedin) {
+		// Output username
+		return response.sendFile(path.join(__dirname + '/Requisition.html'));
+	} else {
+		// Not logged in
+		return response.sendFile(path.join(__dirname + '/login.html'));
+	}
+	response.end();
+});
+// http://localhost:3000/HistorySetShop
+app.get('/HistorySetShop', function(request, response) {
+	// If the user is loggedin
+	if (request.session.loggedin) {
+		// Output username
+		return response.sendFile(path.join(__dirname + '/HistorySetShop.html'));
+	} else {
+		// Not logged in
+		return response.sendFile(path.join(__dirname + '/login.html'));     
+	}
+	response.end();
+});
+// http://localhost:3000/HistorySetPlus
+app.get('/HistorySetPlus', function(request, response) {
+	// If the user is loggedin
+	if (request.session.loggedin) {
+		// Output username
+		return response.sendFile(path.join(__dirname + '/HistorySetPlus.html'));
+	} else {
+		// Not logged in
+		return response.sendFile(path.join(__dirname + '/login.html'));     
+	}
+	response.end();
+});
+// http://localhost:3000/HistorySet3000
+app.get('/HistorySet3000', function(request, response) {
+	// If the user is loggedin
+	if (request.session.loggedin) {
+		// Output username
+		return response.sendFile(path.join(__dirname + '/HistorySet3000.html'));
+	} else {
+		// Not logged in
+		return response.sendFile(path.join(__dirname + '/login.html'));     
+	}
+	response.end();
+});
+// http://localhost:3000/HistorySet4Shipsabuy
+app.get('/HistorySet4Shipsabuy', function(request, response) {
+	// If the user is loggedin
+	if (request.session.loggedin) {
+		// Output username
+		return response.sendFile(path.join(__dirname + '/HistorySet4Shipsabuy.html'));
+	} else {
+		// Not logged in
+		return response.sendFile(path.join(__dirname + '/login.html'));     
+	}
+	response.end();
+});
+// http://localhost:3000/HistorySet2Shipsabuy
+app.get('/HistorySet2Shipsabuy', function(request, response) {
+	// If the user is loggedin
+	if (request.session.loggedin) {
+		// Output username
+		return response.sendFile(path.join(__dirname + '/HistorySet2Shipsabuy.html'));
+	} else {
+		// Not logged in
+		return response.sendFile(path.join(__dirname + '/login.html'));     
+	}
+	response.end();
+});
+// http://localhost:3000/HistorySet3Shipsabuy
+app.get('/HistorySet3Shipsabuy', function(request, response) {
+	// If the user is loggedin
+	if (request.session.loggedin) {
+		// Output username
+		return response.sendFile(path.join(__dirname + '/HistorySet3Shipsabuy.html'));
+	} else {
+		// Not logged in
+		return response.sendFile(path.join(__dirname + '/login.html'));     
+	}
+	response.end();
+});
+// http://localhost:3000/HistorySet1Shipsabuy
+app.get('/HistorySet1Shipsabuy', function(request, response) {
+	// If the user is loggedin
+	if (request.session.loggedin) {
+		// Output username
+		return response.sendFile(path.join(__dirname + '/HistorySet1Shipsabuy.html'));
+	} else {
+		// Not logged in
+		return response.sendFile(path.join(__dirname + '/login.html'));     
+	}
+	response.end();
+});
+// http://localhost:3000/HistorySellPageShipsabuy
+app.get('/HistorySellPageShipsabuy', function(request, response) {
+	// If the user is loggedin
+	if (request.session.loggedin) {
+		// Output username
+		return response.sendFile(path.join(__dirname + '/HistorySellPageShipsabuy.html'));
+	} else {
+		// Not logged in
+		return response.sendFile(path.join(__dirname + '/login.html'));     
+	}
+	response.end();
+});
+// http://localhost:3000/HistorySellPageFlash
+app.get('/HistorySellPageFlash', function(request, response) {
+	// If the user is loggedin
+	if (request.session.loggedin) {
+		// Output username
+		return response.sendFile(path.join(__dirname + '/HistorySellPageFlash.html'));
+	} else {
+		// Not logged in
+		return response.sendFile(path.join(__dirname + '/login.html'));     
+	}
+	response.end();
+});
+// http://localhost:3000/HistorySellPageBitkub
+app.get('/HistorySellPageBitkub', function(request, response) {
+	// If the user is loggedin
+	if (request.session.loggedin) {
+		// Output username
+		return response.sendFile(path.join(__dirname + '/HistorySellPageBitkub.html'));
+	} else {
+		// Not logged in
+		return response.sendFile(path.join(__dirname + '/login.html'));     
+	}
+	response.end();
+});
+// http://localhost:3000/HistorySellPage
+app.get('/HistorySellPage', function(request, response) {
+	// If the user is loggedin
+	if (request.session.loggedin) {
+		// Output username
+		return response.sendFile(path.join(__dirname + '/HistorySellPage.html'));
+	} else {
+		// Not logged in
+		return response.sendFile(path.join(__dirname + '/login.html'));     
+	}
+	response.end();
+});
+// http://localhost:3000/HistoryBuyPageShipsabuy
+app.get('/HistoryBuyPageShipsabuy', function(request, response) {
+	// If the user is loggedin
+	if (request.session.loggedin) {
+		// Output username
+		return response.sendFile(path.join(__dirname + '/HistoryBuyPageShipsabuy.html'));
+	} else {
+		// Not logged in
+		return response.sendFile(path.join(__dirname + '/login.html'));     
+	}
+	response.end();
+});
+// http://localhost:3000/HistoryBuyPageFlash
+app.get('/HistoryBuyPageFlash', function(request, response) {
+	// If the user is loggedin
+	if (request.session.loggedin) {
+		// Output username
+		return response.sendFile(path.join(__dirname + '/HistoryBuyPageFlash.html'));
+	} else {
+		// Not logged in
+		return response.sendFile(path.join(__dirname + '/login.html'));     
+	}
+	response.end();
+});
+// http://localhost:3000/HistoryBuyPageBitkub
+app.get('/HistoryBuyPageBitkub', function(request, response) {
+	// If the user is loggedin
+	if (request.session.loggedin) {
+		// Output username
+		return response.sendFile(path.join(__dirname + '/HistoryBuyPageBitkub.html'));
+	} else {
+		// Not logged in
+		return response.sendFile(path.join(__dirname + '/login.html'));     
+	}
+	response.end();
+});
+// http://localhost:3000/HistoryBuyPage
+app.get('/HistoryBuyPage', function(request, response) {
+	// If the user is loggedin
+	if (request.session.loggedin) {
+		// Output username
+		return response.sendFile(path.join(__dirname + '/HistoryBuyPage.html'));
+	} else {
+		// Not logged in
+		return response.sendFile(path.join(__dirname + '/login.html'));     
+	}
+	response.end();
+});
+
+
+
+//   // http://localhost:3000/
+//   app.get('/', function(request, response) {
+// 	// Render login template
+// 	response.sendFile(path.join(__dirname + '/login.html'));
+// });
+
+// //login
+// app.post('/login', jsonParser, function (req, res, next) {
+//     console.log('login', req.body.email, req.body.password);
+//     db.execute(
+//        ' SELECT * FROM users WHERE email=?',
+//        [req.body.email],
+//        function(err, users, fields) {
+//            if(err) {res.json({status : 'eroor', message: err}); return }
+//            if(users.length == 0) {res.json({status : 'eroor', message: 'no users found!'}); return }
+//            bcrypt.compare(req.body.password, users[0].password, function(err, isLogin) {
+//                if (isLogin) {
+//                    var token = jwt.sign({ email: users[0].email }, secret, { expiresIn: '12h' });
+//                    res.json({status: 'ok',message:'login success!',token})
+                   
+//                }else{
+//                    res.json({status: 'error',message:'login failed!'})
+//                }
+//            });
+//            }
+//        );
+// })
+
+//    //authen
+//    app.post('/authen', jsonParser, function (req, res, next) {
+//        try{
+//            const token = req.headers.authorization.split(' ')[1]
+//            var decoded = jwt.verify(token, secret);
+//            res.json({status: 'ok', decoded})  
+//            response.sendFile(path.join(__dirname + '/home.html'));
+//        } catch(err){
+//            res.json({status: 'error', message: err.message})
+//            response.end();
+//        }
+//    })
+
+// // http://localhost:3000/home
+// app.get('/home', function(request, response) {
+// 	// If the user is loggedin
+// 	if (request.session.loggedin) {
+// 		// Output username
+// 		return response.sendFile(path.join(__dirname + '/home.html'));
+// 	} else {
+// 		// Not logged in
+// 		return response.sendFile(path.join(__dirname + '/login.html'));
+// 	}
+// 	response.end();
+// });
 
 const server = app.listen(3000,()=> {
     console.log ('nodejs is running on port 3000!')
