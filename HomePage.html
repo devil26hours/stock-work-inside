@@ -18,7 +18,7 @@
     <div class="homepagecontainer">
     <!-- <nav-main> -->
         <div class="nav-container">
-            <a href="HomePage.html">
+            <a href="home">
                 <img src="./imgs/shippoplogo.png" class="logonav">
             </a>  
             <H1 class="title-stockmain"><sub>STOCK</sub></H1> 
@@ -30,7 +30,7 @@
                 
               </button>
               <ul class="dropdown-menu">
-                <li><a id="fname" class="dropdown-item">User Name</a></li>
+                <li><a id="fname" class="dropdown-item"><%= Session("username").ToString%></a></li>
                 <li><hr class="dropdown-divider"></li>
                 <li><a href="/logout" >Logout</a></li>
               </ul>
@@ -72,7 +72,6 @@
 <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="//cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
 <script>
-
 
 
 </script>

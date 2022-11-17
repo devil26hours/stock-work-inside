@@ -15,12 +15,15 @@ const { response, request } = require('express');
 const path = require('path');
 const session = require('express-session');
 const secret = 'popstock'
+const cookieSession = require('cookie-session');
 
 app.use(session({
 	secret: 'secret',
 	resave: true,
 	saveUninitialized: true
 }));
+
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'static')));
@@ -66,10 +69,11 @@ app.post('/auth', function(request, response) {
 				// Authenticate the user
 				request.session.loggedin = true;
 				request.session.username = username;
+                console.log(request.session.username);
 				// Redirect to home page
 				response.redirect('/home');
 			} else {
-				response.send('Incorrect Username and/or Password!');
+				response.send('Incorrect Username and/or Password!  <a href="/">Click here</a>');
 			}			
 			response.end();
 		});
@@ -81,7 +85,6 @@ app.post('/auth', function(request, response) {
 
 //logout
 app.get('/logout', (req, res) =>{
-    //sessiondestroy
     req.session = null;
     res.redirect('/');
 })
@@ -91,7 +94,8 @@ app.get('/home', function(request, response) {
 	// If the user is loggedin
 	if (request.session.loggedin) {
 		// Output username
-		return response.sendFile(path.join(__dirname + '/HomePage.html'));
+		return response.sendFile(path.join(__dirname + '/HomePage.html')),
+        console.log(request.session.username);
         
 	} else {
 		// Not logged in
